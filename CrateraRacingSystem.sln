@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CopersucarScript", "Copersu
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Common", "Common\Common.shproj", "{61EBA249-19F3-48B6-A25B-A4CEE90168BA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CarScript-Vanilla", "CarScript-Vanilla\CarScript-Vanilla.csproj", "{E8E2EC84-701E-4116-AF34-4C3FCE0339B4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,14 @@ Global
 		{D45D1E49-9C8F-495F-A982-C8BF8EA67095}.Release|Any CPU.Build.0 = Debug|x64
 		{D45D1E49-9C8F-495F-A982-C8BF8EA67095}.Release|x64.ActiveCfg = Debug|x64
 		{D45D1E49-9C8F-495F-A982-C8BF8EA67095}.Release|x64.Build.0 = Debug|x64
+		{E8E2EC84-701E-4116-AF34-4C3FCE0339B4}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{E8E2EC84-701E-4116-AF34-4C3FCE0339B4}.Debug|Any CPU.Build.0 = Debug|x64
+		{E8E2EC84-701E-4116-AF34-4C3FCE0339B4}.Debug|x64.ActiveCfg = Debug|x64
+		{E8E2EC84-701E-4116-AF34-4C3FCE0339B4}.Debug|x64.Build.0 = Debug|x64
+		{E8E2EC84-701E-4116-AF34-4C3FCE0339B4}.Release|Any CPU.ActiveCfg = Debug|x64
+		{E8E2EC84-701E-4116-AF34-4C3FCE0339B4}.Release|Any CPU.Build.0 = Debug|x64
+		{E8E2EC84-701E-4116-AF34-4C3FCE0339B4}.Release|x64.ActiveCfg = Debug|x64
+		{E8E2EC84-701E-4116-AF34-4C3FCE0339B4}.Release|x64.Build.0 = Debug|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -64,5 +74,6 @@ Global
 		Common\Common.projitems*{3012e2a0-fa12-438f-9ab7-278a5548be84}*SharedItemsImports = 4
 		Common\Common.projitems*{61eba249-19f3-48b6-a25b-a4cee90168ba}*SharedItemsImports = 13
 		Common\Common.projitems*{7ef37750-9aca-4004-9d2c-05ef9850b3d1}*SharedItemsImports = 4
+		Common\Common.projitems*{e8e2ec84-701e-4116-af34-4c3fce0339b4}*SharedItemsImports = 4
 	EndGlobalSection
 EndGlobal
