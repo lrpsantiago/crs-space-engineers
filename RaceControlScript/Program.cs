@@ -58,10 +58,8 @@ namespace IngameScript
         private Dictionary<string, long> _pendingAddressTracking;
         private List<TrackedRacer> _racePositions = new List<TrackedRacer>();
         private Flag _currentFlag = Flag.Green;
-        private Weather _currentWeather = Weather.Clear;
-        private int _riskOfRain = INITIAL_RISK_OF_RAIN;
         private string _rankTable;
-        private int _weatherChangeCountdown = -1;
+        private Weather _weather;
 
         private RaceMode _raceMode;
         private bool _startLightsProtocol;
@@ -312,25 +310,6 @@ namespace IngameScript
                 UpdatePositions();
                 UpdateLapCountersLcd();
                 UpdateSpeedtrapLcd(entity);
-
-                if (_raceMode == RaceMode.Race && ENABLE_WEATHER)
-                {
-                    var first = _racePositions.FirstOrDefault();
-
-                    if (first != null
-                        && first == _racers[entity.Name]
-                        && _riskOfRain < 100)
-                    {
-                        _riskOfRain += rand.Next(-4, 9);
-                        _riskOfRain = MathHelper.Clamp(_riskOfRain, 0, 100);
-                        ConsolePrint($"RoR: {_riskOfRain}\n");
-
-                        if (_riskOfRain == 100 && _weatherChangeCountdown <= 0)
-                        {
-                            _weatherChangeCountdown = WEATHER_CHANGE_TIME;
-                        }
-                    }
-                }
             }
         }
 
@@ -548,17 +527,15 @@ namespace IngameScript
                 var strTotalRacers = $"{_racers.Count}";
                 var strTotalLaps = $"{RACE_LAPS}";
                 var strCurrentFlag = $"{(int)_currentFlag}";
-                var strCurrentWeather = $"{(int)_currentWeather}";
-                var strRiskOfRain = $"{_riskOfRain}";
-                var strWeatherChangeCountdown = $"{Math.Ceiling((float)_weatherChangeCountdown / 1000)}";
+                var strCurrentWeather = $"{(int)_weather.Level}";
                 var strRankTable = _rankTable;
                 var strS1 = $"{(int)GetSectorStatus(1, racer)}";
                 var strS2 = $"{(int)GetSectorStatus(2, racer)}";
                 var strS3 = $"{(int)GetSectorStatus(3, racer)}";
                 var prevLapTime = racer.PreviousLapTime.GetValueOrDefault();
                 var strPrevLapTime = $"{prevLapTime.Minutes:00}:{prevLapTime.Seconds:00}.{prevLapTime.Milliseconds:000}";
-
-                var data = $"{racer.Laps};{racer.Position};{strCurrentLapTime};{strBestLapTime};{strTotalRacers};{strTotalLaps};{strCurrentFlag};{strCurrentWeather};{strRiskOfRain};{strWeatherChangeCountdown};{strRankTable};{strS1};{strS2};{strS3};{strPrevLapTime}";
+                
+                var data = $"{racer.Laps};{racer.Position};{strCurrentLapTime};{strBestLapTime};{strTotalRacers};{strTotalLaps};{strCurrentFlag};{strCurrentWeather};{strRankTable};{strS1};{strS2};{strS3};{strPrevLapTime}";
 
                 IGC.SendUnicastMessage(racer.IgcAddress.Value, tag, data);
             }
@@ -636,17 +613,7 @@ namespace IngameScript
 
         private void UpdateWeather()
         {
-            if (!ENABLE_WEATHER || _weatherChangeCountdown <= 0 || _raceMode != RaceMode.Race)
-            {
-                return;
-            }
-
-            _weatherChangeCountdown -= (int)Runtime.TimeSinceLastRun.TotalMilliseconds;
-
-            if (_weatherChangeCountdown <= 0)
-            {
-                _currentWeather = Weather.Rain;
-            }
+            _weather.Update((float)Runtime.TimeSinceLastRun.TotalMilliseconds);
         }
 
         private void SetupLcds()
@@ -801,9 +768,7 @@ namespace IngameScript
             _startTimeCounter = 0;
             _racePositions.Clear();
             _currentFlag = Flag.Green;
-            _currentWeather = Weather.Clear;
-            _riskOfRain = INITIAL_RISK_OF_RAIN;
-            _weatherChangeCountdown = -1;
+            _weather = new Weather();
             _bestLap = null;
 
             for (int i = 0; i < _startLightGroups.Count; i++)

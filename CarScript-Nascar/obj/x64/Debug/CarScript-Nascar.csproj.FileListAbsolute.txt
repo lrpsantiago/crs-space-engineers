@@ -48,3 +48,7 @@ C:\Users\lrpsa\OneDrive\Documents\crs-space-engineers\CarScript-Nascar\obj\x64\D
 C:\Users\lrpsa\OneDrive\Documents\crs-space-engineers\CarScript-Nascar\obj\x64\Debug\CarScript-Nascar.csproj.CopyComplete
 C:\Users\lrpsa\OneDrive\Documents\crs-space-engineers\CarScript-Nascar\obj\x64\Debug\Fsess-Nascar.exe
 C:\Users\lrpsa\OneDrive\Documents\crs-space-engineers\CarScript-Nascar\obj\x64\Debug\Fsess-Nascar.pdb
+C:\Users\BairesDev\Documents\crs-space-engineers\CarScript-Nascar\obj\x64\Debug\CarScript-Nascar.csproj.AssemblyReference.cache
+C:\Users\BairesDev\Documents\crs-space-engineers\CarScript-Nascar\obj\x64\Debug\CarScript-Nascar.csproj.CoreCompileInputs.cache
+C:\Users\BairesDev\Documents\crs-space-engineers\CarScript-Nascar\obj\x64\Debug\CarScript-Nascar.csproj.SuggestedBindingRedirects.cache
+C:\Users\BairesDev\Documents\crs-space-engineers\CarScript-Nascar\obj\x64\Debug\Fsess-Nascar.exe.config

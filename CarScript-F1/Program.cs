@@ -173,7 +173,7 @@ namespace IngameScript
             var currentTimeStamp = DateTime.Now;
             _delta = (float)(currentTimeStamp - _lastTimeStamp).TotalMilliseconds / 1000;
 
-            Echo($"Running FSESS {CODE_VERSION}");
+            Echo($"Running CRS-F1 {CODE_VERSION}");
 
             HandleArgument(argument);
             UpdateDrs();
@@ -312,13 +312,8 @@ namespace IngameScript
             var strSpeed = $"{Math.Floor(speed)}m/s";
             var ersBar = BuildVerticalBar('E', 8, _ersCharge, 1);
             var tyreBar = BuildVerticalBar(tyreCompoundIndicator, 8, _currentTyres.WearPercentage, 100);
-            var strWeather = _data.CurrentWeather == Weather.Clear ? "<CLEAR>" : "<RAIN>";
-            var strRiskOfRain = _data.RiskOfRain < 100
-                ? $"RoR:{_data.RiskOfRain,2}%"
-                : $"RoR:{_data.RiskOfRain,3}";
-            var strWeatherLine = _data.WeatherChangeCountdown <= 0
-                ? $"{strWeather} {strRiskOfRain.PadLeft(INNER_DISPLAY_WIDTH - 1 - strWeather.Length)}"
-                : $" <RAIN IN {_data.WeatherChangeCountdown,2}s> ";
+            var strWeather = Weather.GetWeatherDescription(_data.CurrentWeather);
+            var strWeatherLine = $"DRY ○○○●○○○ WET";
             var controlLine = (_isDrsActive ? "DRS" : "   ") + " " +
                 (_isErsActive ? "ERS" : "   ") + " " +
                 (_isDrafting ? "DFT" : "   ") + " " +

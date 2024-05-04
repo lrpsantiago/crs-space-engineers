@@ -14,20 +14,13 @@ namespace IngameScript
 
             public char Symbol { get; private set; }
 
-            public float CurrentFriction { get; set; }
+            public float CurrentFriction { get { return CalculateCurrentFriction(); } }
 
             public float MaxFriction { get; private set; }
 
             public float MinFriction { get; private set; }
 
-            public float AnchorFriction { get; private set; }
-
-            public float AnchorAtPerc { get; private set; }
-
-            public float WearPercentage
-            {
-                get { return ((CurrentFriction - MinFriction) / (MaxFriction - MinFriction)) * 100f; }
-            }
+            public float WearPercentage { get; private set; }
 
             public int Lifespan { get; private set; }
 
@@ -35,22 +28,21 @@ namespace IngameScript
 
             public Color Color { get; private set; }
 
-            private Tyre(float maxFriction, int lifespan, float anchorFriction, float anchorAtPerc, char symbol, Color color, bool isSlick = true)
+            private Tyre(int lifespan, float maxFriction, float minFriction, char symbol, Color color, bool isSlick = true)
             {
-                MaxFriction = maxFriction;
-                CurrentFriction = MaxFriction;
                 Lifespan = lifespan;
-                AnchorFriction = anchorFriction;
-                AnchorAtPerc = anchorAtPerc;
-                MinFriction = (float)Math.Round(AnchorFriction - ((MaxFriction - AnchorFriction) / (100 - AnchorAtPerc)) * AnchorAtPerc, 2);
+                MaxFriction = maxFriction;
+                MinFriction = minFriction;
                 Symbol = symbol;
                 Color = color;
                 IsSlick = isSlick;
+                WearPercentage = 1f;
 
-                _wearFactor = (MaxFriction - MinFriction) / (60 * Lifespan);
+                _wearFactor = 1f / (60 * Lifespan);
             }
 
-            public void Update(IMyShipController mainController, IMyMotorSuspension[] suspensions, List<IMyLightingBlock> brakelights, List<IMyLightingBlock> tyreLights, RaceData data, float delta)
+            public void Update(IMyShipController mainController, IMyMotorSuspension[] suspensions,
+                List<IMyLightingBlock> brakelights, List<IMyLightingBlock> tyreLights, RaceData data, float delta)
             {
                 var speed = mainController.GetShipSpeed();
 
@@ -62,23 +54,26 @@ namespace IngameScript
                 var speedFactor = (float)MathHelper.Clamp(speed, 0, 90) / 90;
                 var wearRate = _wearFactor * speedFactor * delta;
 
-                CurrentFriction -= wearRate;
-                CurrentFriction = MathHelper.Clamp(CurrentFriction, MinFriction, MaxFriction);
+                WearPercentage -= wearRate * GetTyreWeariness(data.CurrentWeather);
+                WearPercentage = MathHelper.Clamp(WearPercentage, 0, 1f);
 
                 foreach (var s in suspensions)
                 {
-                    s.Friction = !(IsSlick && data.CurrentWeather == Weather.Rain) ? CurrentFriction : CurrentFriction / 2;
+                    s.Friction = CurrentFriction * GetTyreEfficiency(data.CurrentWeather);
                 }
 
-                if (WearPercentage <= AnchorAtPerc)
+                if (WearPercentage <= 0.25f)
                 {
-                    if (tyreLights.Any(l => l.BlinkIntervalSeconds <= 0))
+                    if (brakelights.Any(l => l.BlinkIntervalSeconds <= 0))
                     {
                         foreach (var l in brakelights)
                         {
                             l.BlinkIntervalSeconds = 0.25f;
                         }
+                    }
 
+                    if (tyreLights.Any(l => l.BlinkIntervalSeconds <= 0))
+                    {
                         foreach (var l in tyreLights)
                         {
                             l.BlinkIntervalSeconds = 0.25f;
@@ -87,13 +82,16 @@ namespace IngameScript
                 }
                 else
                 {
-                    if (tyreLights.Any(l => l.BlinkIntervalSeconds > 0))
+                    if (brakelights.Any(l => l.BlinkIntervalSeconds > 0))
                     {
                         foreach (var l in brakelights)
                         {
                             l.BlinkIntervalSeconds = 0f;
                         }
+                    }
 
+                    if (tyreLights.Any(l => l.BlinkIntervalSeconds > 0))
+                    {
                         foreach (var l in tyreLights)
                         {
                             l.BlinkIntervalSeconds = 0f;
@@ -111,39 +109,105 @@ namespace IngameScript
                 }
             }
 
+            public static Tyre Load(char compoundSymbol, float wearPercentage)
+            {
+                Tyre result;
+
+                switch (compoundSymbol)
+                {
+                    case 'U': result = NewUltras(); break;
+                    case 'S': result = NewSofts(); break;
+                    case 'M': result = NewMediums(); break;
+                    case 'H': result = NewHards(); break;
+                    case 'X': result = NewExtras(); break;
+                    case 'I': result = NewIntermediates(); break;
+                    case 'W': result = NewWets(); break;
+                    default: result = NewSofts(); break;
+                }
+
+                result.WearPercentage = wearPercentage;
+
+                return result;
+            }
+
             public static Tyre NewUltras()
             {
-                return new Tyre(100, 5, 60, 20, 'U', new Color(192, 0, 255));
+                return new Tyre(5, 100, 80, 'U', new Color(192, 0, 255));
             }
 
             public static Tyre NewSofts()
             {
-                return new Tyre(100, 8, 50, 20, 'S', Color.Red);
+                return new Tyre(8, 100, 40, 'S', Color.Red);
             }
 
             public static Tyre NewMediums()
             {
-                return new Tyre(75, 13, 50, 20, 'M', Color.Yellow);
+                return new Tyre(13, 75, 40, 'M', Color.Yellow);
             }
 
             public static Tyre NewHards()
             {
-                return new Tyre(60, 21, 50, 20, 'H', Color.White);
+                return new Tyre(21, 60, 40, 'H', Color.White);
             }
 
             public static Tyre NewExtras()
             {
-                return new Tyre(55, 34, 50, 20, 'X', new Color(255, 32, 0));
+                return new Tyre(34, 55, 40, 'X', new Color(255, 32, 0));
             }
 
             public static Tyre NewIntermediates()
             {
-                return new Tyre(60, 8, 40, 10, 'I', Color.Green, false);
+                return new Tyre(8, 60, 35, 'I', Color.Green, false);
             }
 
             public static Tyre NewWets()
             {
-                return new Tyre(50, 21, 40, 10, 'W', new Color(0, 16, 255), false);
+                return new Tyre(13, 50, 35, 'W', new Color(0, 16, 255), false);
+            }
+
+            private float GetTyreEfficiency(WeatherLevel weatherLevel)
+            {
+                switch (weatherLevel)
+                {
+                    case WeatherLevel.Clear:
+                    case WeatherLevel.LightClouds:
+                    case WeatherLevel.Cloudy:
+                    case WeatherLevel.Overcast:
+                        return 1;
+                    case WeatherLevel.Drizzle:
+                        return IsSlick ? 0.75f : 1;
+                    case WeatherLevel.Rain:
+                        return IsSlick ? 0.5f : 1;
+                    case WeatherLevel.HeavyRain:
+                        return IsSlick ? 0.25f : (Symbol == 'I' ? 0.8f : 1);
+                    default:
+                        return 1;
+                }
+            }
+
+            private float GetTyreWeariness(WeatherLevel weatherLevel)
+            {
+                switch (weatherLevel)
+                {
+                    case WeatherLevel.Clear:
+                        return IsSlick ? 1 : (Symbol == 'W' ? 1.5f : 1.25f);
+                    case WeatherLevel.LightClouds:
+                        return IsSlick ? 1 : (Symbol == 'W' ? 1.5f : 1.25f);
+                    case WeatherLevel.Cloudy:
+                        return IsSlick ? 1 : (Symbol == 'W' ? 1.25f : 1);
+                    case WeatherLevel.Overcast:
+                    case WeatherLevel.Drizzle:
+                    case WeatherLevel.Rain:
+                    case WeatherLevel.HeavyRain:
+                    default:
+                        return 1;
+                }
+            }
+
+            private float CalculateCurrentFriction()
+            {
+                var rad = MathHelper.ToRadians(90 - WearPercentage * 90);
+                return MaxFriction - ((MaxFriction - MinFriction) * (float)Math.Sin(rad));
             }
         }
     }

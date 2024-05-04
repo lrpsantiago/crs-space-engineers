@@ -13,9 +13,7 @@ namespace IngameScript
             public string CurrentLapTime { get; set; } = "--:--.---";
             public string BestLapTime { get; set; } = "--:--.---";
             public Flag CurrentFlag { get; set; }
-            public Weather CurrentWeather { get; set; }
-            public int RiskOfRain { get; set; }
-            public int WeatherChangeCountdown { get; set; }
+            public WeatherLevel CurrentWeather { get; set; }
             public string RankTable { get; set; }
             public LapSectorStatus StatusS1 { get; set; }
             public LapSectorStatus StatusS2 { get; set; }
@@ -35,14 +33,12 @@ namespace IngameScript
                     TotalRacers = Convert.ToInt32(values[4]);
                     TotalLaps = Convert.ToInt32(values[5]);
                     CurrentFlag = (Flag)Convert.ToInt32(values[6]);
-                    CurrentWeather = (Weather)Convert.ToInt32(values[7]);
-                    RiskOfRain = Convert.ToInt32(values[8]);
-                    WeatherChangeCountdown = Convert.ToInt32(values[9]);
-                    RankTable = values[10];
-                    StatusS1 = (LapSectorStatus)Convert.ToInt32(values[11]);
-                    StatusS2 = (LapSectorStatus)Convert.ToInt32(values[12]);
-                    StatusS3 = (LapSectorStatus)Convert.ToInt32(values[13]);
-                    PrevLapTime = values[14];
+                    CurrentWeather = (WeatherLevel)Convert.ToInt32(values[7]);
+                    RankTable = values[8];
+                    StatusS1 = (LapSectorStatus)Convert.ToInt32(values[9]);
+                    StatusS2 = (LapSectorStatus)Convert.ToInt32(values[10]);
+                    StatusS3 = (LapSectorStatus)Convert.ToInt32(values[11]);
+                    PrevLapTime = values[12];
                 }
                 catch (Exception) { }
             }

@@ -23,3 +23,7 @@ C:\Users\lrpsa\OneDrive\Documents\crs-space-engineers\CarScript-Vanilla\obj\x64\
 C:\Users\lrpsa\OneDrive\Documents\crs-space-engineers\CarScript-Vanilla\obj\x64\Debug\CarScript-Vanilla.csproj.CopyComplete
 C:\Users\lrpsa\OneDrive\Documents\crs-space-engineers\CarScript-Vanilla\obj\x64\Debug\CarScript-Vanilla.exe
 C:\Users\lrpsa\OneDrive\Documents\crs-space-engineers\CarScript-Vanilla\obj\x64\Debug\CarScript-Vanilla.pdb
+C:\Users\BairesDev\Documents\crs-space-engineers\CarScript-Vanilla\obj\x64\Debug\CarScript-Vanilla.csproj.AssemblyReference.cache
+C:\Users\BairesDev\Documents\crs-space-engineers\CarScript-Vanilla\obj\x64\Debug\CarScript-Vanilla.csproj.SuggestedBindingRedirects.cache
+C:\Users\BairesDev\Documents\crs-space-engineers\CarScript-Vanilla\obj\x64\Debug\CarScript-Vanilla.exe.config
+C:\Users\BairesDev\Documents\crs-space-engineers\CarScript-Vanilla\obj\x64\Debug\CarScript-Vanilla.csproj.CoreCompileInputs.cache

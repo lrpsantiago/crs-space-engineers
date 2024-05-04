@@ -48,3 +48,7 @@ C:\Users\lrpsa\OneDrive\Documents\crs-space-engineers\CarScript-F1\obj\x64\Debug
 C:\Users\lrpsa\OneDrive\Documents\crs-space-engineers\CarScript-F1\obj\x64\Debug\CarScript-F1.csproj.CopyComplete
 C:\Users\lrpsa\OneDrive\Documents\crs-space-engineers\CarScript-F1\obj\x64\Debug\SpaceEngineersScript.exe
 C:\Users\lrpsa\OneDrive\Documents\crs-space-engineers\CarScript-F1\obj\x64\Debug\SpaceEngineersScript.pdb
+C:\Users\BairesDev\Documents\crs-space-engineers\CarScript-F1\obj\x64\Debug\CarScript-F1.csproj.AssemblyReference.cache
+C:\Users\BairesDev\Documents\crs-space-engineers\CarScript-F1\obj\x64\Debug\CarScript-F1.csproj.SuggestedBindingRedirects.cache
+C:\Users\BairesDev\Documents\crs-space-engineers\CarScript-F1\obj\x64\Debug\SpaceEngineersScript.exe.config
+C:\Users\BairesDev\Documents\crs-space-engineers\CarScript-F1\obj\x64\Debug\CarScript-F1.csproj.CoreCompileInputs.cache

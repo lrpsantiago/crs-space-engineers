@@ -48,3 +48,7 @@ C:\Users\lrpsa\OneDrive\Documents\crs-space-engineers\CopersucarScript\obj\x64\D
 C:\Users\lrpsa\OneDrive\Documents\crs-space-engineers\CopersucarScript\obj\x64\Debug\CopersucarScript.csproj.CopyComplete
 C:\Users\lrpsa\OneDrive\Documents\crs-space-engineers\CopersucarScript\obj\x64\Debug\CpsScript.exe
 C:\Users\lrpsa\OneDrive\Documents\crs-space-engineers\CopersucarScript\obj\x64\Debug\CpsScript.pdb
+C:\Users\BairesDev\Documents\crs-space-engineers\CopersucarScript\obj\x64\Debug\CopersucarScript.csproj.AssemblyReference.cache
+C:\Users\BairesDev\Documents\crs-space-engineers\CopersucarScript\obj\x64\Debug\CopersucarScript.csproj.CoreCompileInputs.cache
+C:\Users\BairesDev\Documents\crs-space-engineers\CopersucarScript\obj\x64\Debug\CopersucarScript.csproj.SuggestedBindingRedirects.cache
+C:\Users\BairesDev\Documents\crs-space-engineers\CopersucarScript\obj\x64\Debug\CpsScript.exe.config
