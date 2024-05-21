@@ -1,5 +1,4 @@
 ﻿using Sandbox.ModAPI.Ingame;
-using Sandbox.ModAPI.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -470,7 +469,7 @@ namespace IngameScript
 
             _gyros = gyros;
         }
-       
+
         private void SetupAntenna()
         {
             var antennas = new List<IMyRadioAntenna>();

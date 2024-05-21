@@ -46,7 +46,6 @@ namespace IngameScript
         private IMySensorBlock _caRightSensor;
         private IMySensorBlock _caLeftSensor;
         private IMyCameraBlock _noseCamera;
-        private List<IMyPowerProducer> _powerBlocks;
         private bool _enableSers;
         private bool _hasError;
 
@@ -60,7 +59,6 @@ namespace IngameScript
                 SetupSuspensions();
                 //SetupCamera();
                 SetupCollisionAvoidanceSensors();
-                SetupPowerBlocks();
                 SetupDraftingSensor();
             }
             catch (Exception ex)
@@ -89,10 +87,12 @@ namespace IngameScript
                 return;
             }
 
+            Echo("Running CPS");
+
             var delta = (float)Runtime.TimeSinceLastRun.TotalMilliseconds / 1000;
 
             HandleArgument(argument);
-            UpdateSteering();
+            UpdateSteering(delta);
             UpdateCollisionAvoidance(delta);
             UpdateSmartErs();
             UpdateActiveSuspensions(delta);
@@ -102,6 +102,14 @@ namespace IngameScript
 
         private void UpdateCollisionAvoidance(float delta)
         {
+            if (_caLeftSensor == null
+                || _caLeftSensor.Closed
+                || _caRightSensor == null
+                || _caRightSensor.Closed)
+            {
+                return;
+            }
+
             var moveX = _mainController.MoveIndicator.X;
             var speed = _mainController.GetShipSpeed();
             var fr = GetSuspension(SuspensionPosition.FrontRight);
@@ -141,9 +149,11 @@ namespace IngameScript
             }
 
             var speed = _mainController.GetShipSpeed();
-            var isDrafting = _draftingSensor.IsActive && speed > 70;
+            var isDrafting = _draftingSensor.IsActive && speed > 50;
+            var isTurning = _mainController.MoveIndicator.X != 0;
 
             if (!isDrafting
+                && !isTurning
                 && ((speed >= 95 && speed < 98)
                     || speed < SMART_ERS_ACTIVATION))
             {
@@ -199,7 +209,7 @@ namespace IngameScript
             rl.Height = MathHelper.Clamp(rlh, MAX_HEIGHT, DEFAULT_HEIGHT);
         }
 
-        private void UpdateSteering()
+        private void UpdateSteering(float delta)
         {
             var speed = _mainController.GetShipSpeed();
             var moveX = _mainController.MoveIndicator.X;
@@ -215,10 +225,16 @@ namespace IngameScript
             var outterAngleF = angleF * OUTTER_FACTOR;
             var outterAngleR = angleR * OUTTER_FACTOR;
 
-            fr.MaxSteerAngle = moveX >= 0 ? MathHelper.ToRadians(angleF) : MathHelper.ToRadians(outterAngleF);
-            fl.MaxSteerAngle = moveX <= 0 ? MathHelper.ToRadians(angleF) : MathHelper.ToRadians(outterAngleF);
-            rr.MaxSteerAngle = moveX >= 0 ? MathHelper.ToRadians(angleR) : MathHelper.ToRadians(outterAngleR);
-            rl.MaxSteerAngle = moveX <= 0 ? MathHelper.ToRadians(angleR) : MathHelper.ToRadians(outterAngleR);
+            var targetAngleFr = moveX >= 0 ? MathHelper.ToRadians(angleF) : MathHelper.ToRadians(outterAngleF);
+            var targetAngleFl = moveX <= 0 ? MathHelper.ToRadians(angleF) : MathHelper.ToRadians(outterAngleF);
+            var targetAngleRr = moveX >= 0 ? MathHelper.ToRadians(angleR) : MathHelper.ToRadians(outterAngleR);
+            var targetAngleRl = moveX <= 0 ? MathHelper.ToRadians(angleR) : MathHelper.ToRadians(outterAngleR);
+            var transitionSpeed = 0.1f * delta;
+
+            fr.MaxSteerAngle = MoveTowards(fr.MaxSteerAngle, targetAngleFr, transitionSpeed);
+            fl.MaxSteerAngle = MoveTowards(fl.MaxSteerAngle, targetAngleFl, transitionSpeed);
+            rr.MaxSteerAngle = MoveTowards(rr.MaxSteerAngle, targetAngleRr, transitionSpeed);
+            rl.MaxSteerAngle = MoveTowards(rl.MaxSteerAngle, targetAngleRl, transitionSpeed);
         }
 
         #endregion
@@ -331,33 +347,9 @@ namespace IngameScript
             _caLeftSensor.DetectSmallShips = false;
         }
 
-        private void SetupCamera()
-        {
-            var cam = (IMyCameraBlock)GridTerminalSystem.GetBlockWithName("Nose Camera");
-
-            if (cam == null)
-            {
-                throw new Exception("Nose Camera not found.");
-            }
-
-            _noseCamera = cam;
-            _noseCamera.EnableRaycast = true;
-        }
-
         private void SetupDebugLcd()
         {
             _debugLcd = (IMyTextSurface)GridTerminalSystem.GetBlockWithName(DEBUG_LCD);
-        }
-
-        private void SetupPowerBlocks()
-        {
-            _powerBlocks = new List<IMyPowerProducer>();
-            GridTerminalSystem.GetBlocksOfType(_powerBlocks, b => b.CubeGrid == Me.CubeGrid);
-
-            if (_powerBlocks.Count <= 0)
-            {
-                throw new Exception("Power Blocks not found");
-            }
         }
 
         private void SetupDraftingSensor()
@@ -412,11 +404,20 @@ namespace IngameScript
                 return target;
             }
 
-            var signal = (target - current) / (target - current);
+            var fixedDelta = Math.Min(maxDelta, Math.Abs(target - current));
 
-            return MathHelper.Clamp(current + maxDelta * signal,
-                signal > 0 ? current : target,
-                signal > 0 ? target : current);
+            if (current > target)
+            {
+                current -= fixedDelta;
+                current = MathHelper.Clamp(current, target, current);
+            }
+            else if (current < target)
+            {
+                current += fixedDelta;
+                current = MathHelper.Clamp(current, current, target);
+            }
+
+            return current;
         }
 
         private void PrintVector(Vector3D vector)

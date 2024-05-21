@@ -137,32 +137,32 @@ namespace IngameScript
 
             public static Tyre NewSofts()
             {
-                return new Tyre(8, 100, 40, 'S', Color.Red);
+                return new Tyre(8, 100, 45, 'S', Color.Red);
             }
 
             public static Tyre NewMediums()
             {
-                return new Tyre(13, 75, 40, 'M', Color.Yellow);
+                return new Tyre(13, 75, 45, 'M', Color.Yellow);
             }
 
             public static Tyre NewHards()
             {
-                return new Tyre(21, 60, 40, 'H', Color.White);
+                return new Tyre(21, 60, 45, 'H', Color.White);
             }
 
             public static Tyre NewExtras()
             {
-                return new Tyre(34, 55, 40, 'X', new Color(255, 32, 0));
+                return new Tyre(34, 55, 45, 'X', new Color(255, 32, 0));
             }
 
             public static Tyre NewIntermediates()
             {
-                return new Tyre(8, 60, 35, 'I', Color.Green, false);
+                return new Tyre(8, 60, 40, 'I', Color.Green, false);
             }
 
             public static Tyre NewWets()
             {
-                return new Tyre(13, 50, 35, 'W', new Color(0, 16, 255), false);
+                return new Tyre(13, 50, 40, 'W', new Color(0, 16, 255), false);
             }
 
             private float GetTyreEfficiency(WeatherLevel weatherLevel)
@@ -190,13 +190,15 @@ namespace IngameScript
                 switch (weatherLevel)
                 {
                     case WeatherLevel.Clear:
-                        return IsSlick ? 1 : (Symbol == 'W' ? 1.5f : 1.25f);
+                        return IsSlick ? 1 : (Symbol == 'W' ? 2f : 1.25f);
                     case WeatherLevel.LightClouds:
-                        return IsSlick ? 1 : (Symbol == 'W' ? 1.5f : 1.25f);
+                        return Symbol == 'W' ? 1.8f : 1;
                     case WeatherLevel.Cloudy:
-                        return IsSlick ? 1 : (Symbol == 'W' ? 1.25f : 1);
+                        return Symbol == 'W' ? 1.6f : 1;
                     case WeatherLevel.Overcast:
+                        return Symbol == 'W' ? 1.4f : 1;
                     case WeatherLevel.Drizzle:
+                        return Symbol == 'W' ? 1.2f : 1;
                     case WeatherLevel.Rain:
                     case WeatherLevel.HeavyRain:
                     default:

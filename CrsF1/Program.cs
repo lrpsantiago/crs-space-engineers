@@ -3,7 +3,6 @@ using Sandbox.ModAPI.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Emit;
 using System.Text;
 using VRage.Game.GUI.TextPanel;
 using VRage.Utils;
@@ -38,7 +37,7 @@ namespace IngameScript
 
         //************ DO NOT MODIFY BELLOW HERE ************
 
-        private readonly string CODE_VERSION = "13.0.0";
+        private readonly string CODE_VERSION = "13.1.0";
         private const int CONNECTION_TIMEOUT = 3000;
         private const int SAVE_STATE_COOLDOWN = 1000;
         private const int DRAFTING_COOLDOWN = 1000;
@@ -305,9 +304,7 @@ namespace IngameScript
             _stringBuilder.Clear();
 
             const int DISPLAY_WIDTH = 21;
-            const int DISPLAY_HEIGHT = 8;
             const int INNER_DISPLAY_WIDTH = DISPLAY_WIDTH - 6;
-            var charBuffer = new char[DISPLAY_WIDTH, DISPLAY_HEIGHT];
             var speed = _mainController.GetShipSpeed();
             var tyreCompoundIndicator = _currentTyres.Symbol;
             var strSpeed = $"{Math.Floor(speed)}m/s";
