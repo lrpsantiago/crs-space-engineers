@@ -4,7 +4,7 @@
     {
         private class CharacterAnimation
         {
-            private char[] _frames;
+            private readonly char[] _frames;
             private int _cooldown;
 
             public int CurrentFrame { get; private set; }

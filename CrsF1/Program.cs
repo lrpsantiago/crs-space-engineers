@@ -1416,7 +1416,7 @@ namespace IngameScript
 
             if (_isErsActive)
             {
-                return 98f;
+                return 97f;
             }
 
             return DEFAULT_SUSPENSION_SPEED_LIMIT;

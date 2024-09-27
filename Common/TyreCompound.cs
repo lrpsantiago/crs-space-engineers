@@ -10,7 +10,7 @@
             Hard,           //60%  ~21 minutes
             Extra,          //55%  ~34 minutes
             Intermediate,   //60%  ~8  minutes
-            Wet             //50%  ~21 minutes
+            Wet             //50%  ~13 minutes
         }
     }
 }
