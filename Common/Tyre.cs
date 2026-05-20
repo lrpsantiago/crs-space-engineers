@@ -141,27 +141,27 @@ namespace IngameScript
 
             public static Tyre NewUltras()
             {
-                return new Tyre(8, 100, 38, 'U', new Color(192, 0, 255));
+                return new Tyre(8, 90, 38, 'U', new Color(192, 0, 255));
             }
 
             public static Tyre NewSofts()
             {
-                return new Tyre(10, 90, 40, 'S', Color.Red);
+                return new Tyre(10, 80, 40, 'S', Color.Red);
             }
 
             public static Tyre NewMediums()
             {
-                return new Tyre(15, 75, 40, 'M', Color.Yellow);
+                return new Tyre(15, 65, 40, 'M', Color.Yellow);
             }
 
             public static Tyre NewHards()
             {
-                return new Tyre(20, 60, 40, 'H', Color.White);
+                return new Tyre(20, 55, 40, 'H', Color.White);
             }
 
             public static Tyre NewExtras()
             {
-                return new Tyre(30, 55, 40, 'X', new Color(255, 32, 0));
+                return new Tyre(30, 50, 40, 'X', new Color(255, 32, 0));
             }
 
             public static Tyre NewIntermediates()
@@ -171,7 +171,7 @@ namespace IngameScript
 
             public static Tyre NewWets()
             {
-                return new Tyre(15, 50, 38, 'W', new Color(0, 16, 255), false);
+                return new Tyre(15, 52, 38, 'W', new Color(0, 16, 255), false);
             }
 
             private float GetTyreEfficiency(WeatherLevel weatherLevel)
