@@ -10,6 +10,7 @@ namespace IngameScript
             private long _startTimeStamp;
             private long? _endTimeStamp;
             private long[] _checkpointTimeStamp;
+            private Func<long> _timeStampProvider;
 
             public TimeSpan LapTime
             {
@@ -23,7 +24,7 @@ namespace IngameScript
                         return new TimeSpan(end - start);
                     }
 
-                    return new TimeSpan(DateTime.Now.Ticks - _startTimeStamp);
+                    return new TimeSpan(_timeStampProvider() - _startTimeStamp);
                 }
             }
 
@@ -69,11 +70,12 @@ namespace IngameScript
 
             public bool IsOutLap { get; set; }
 
-            public Lap(long startTimeStamp, bool isOutLap = false)
+            public Lap(long startTimeStamp, Func<long> timeStampProvider, bool isOutLap = false)
             {
                 _startTimeStamp = startTimeStamp;
                 _endTimeStamp = null;
                 _checkpointTimeStamp = new long[CHECKPOINT_COUNT];
+                _timeStampProvider = timeStampProvider;
 
                 for (int i = 0; i < _checkpointTimeStamp.Length; i++)
                 {
@@ -83,17 +85,17 @@ namespace IngameScript
                 IsOutLap = isOutLap;
             }
 
-            public void SetCheckpoint(int i)
+            public void SetCheckpoint(int i, long timeStamp)
             {
                 if (_checkpointTimeStamp[i] <= 0)
                 {
-                    _checkpointTimeStamp[i] = DateTime.Now.Ticks;
+                    _checkpointTimeStamp[i] = timeStamp;
                 }
             }
 
-            public void Finish()
+            public void Finish(long timeStamp)
             {
-                _endTimeStamp = DateTime.Now.Ticks;
+                _endTimeStamp = timeStamp;
             }
 
             public TimeSpan GetSector(int sectorNumber)
@@ -130,7 +132,7 @@ namespace IngameScript
 
                 if (sectorEndTimeStamp == null || sectorEndTimeStamp <= 0)
                 {
-                    return new TimeSpan(DateTime.Now.Ticks - sectorStartTimeStamp);
+                    return new TimeSpan(_timeStampProvider() - sectorStartTimeStamp);
                 }
 
                 return new TimeSpan(sectorEndTimeStamp.Value - sectorStartTimeStamp);

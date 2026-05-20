@@ -132,37 +132,37 @@ namespace IngameScript
 
             public static Tyre NewUltras()
             {
-                return new Tyre(5, 100, 80, 'U', new Color(192, 0, 255));
+                return new Tyre(8, 100, 38, 'U', new Color(192, 0, 255));
             }
 
             public static Tyre NewSofts()
             {
-                return new Tyre(8, 100, 45, 'S', Color.Red);
+                return new Tyre(10, 90, 40, 'S', Color.Red);
             }
 
             public static Tyre NewMediums()
             {
-                return new Tyre(13, 75, 45, 'M', Color.Yellow);
+                return new Tyre(15, 75, 40, 'M', Color.Yellow);
             }
 
             public static Tyre NewHards()
             {
-                return new Tyre(21, 60, 45, 'H', Color.White);
+                return new Tyre(20, 60, 40, 'H', Color.White);
             }
 
             public static Tyre NewExtras()
             {
-                return new Tyre(34, 55, 45, 'X', new Color(255, 32, 0));
+                return new Tyre(30, 55, 40, 'X', new Color(255, 32, 0));
             }
 
             public static Tyre NewIntermediates()
             {
-                return new Tyre(8, 60, 40, 'I', Color.Green, false);
+                return new Tyre(15, 60, 38, 'I', Color.Green, false);
             }
 
             public static Tyre NewWets()
             {
-                return new Tyre(13, 50, 40, 'W', new Color(0, 16, 255), false);
+                return new Tyre(15, 50, 38, 'W', new Color(0, 16, 255), false);
             }
 
             private float GetTyreEfficiency(WeatherLevel weatherLevel)
@@ -208,8 +208,16 @@ namespace IngameScript
 
             private float CalculateCurrentFriction()
             {
-                var rad = MathHelper.ToRadians(90 - WearPercentage * 90);
-                return MaxFriction - ((MaxFriction - MinFriction) * (float)Math.Sin(rad));
+                var used = 1f - WearPercentage;
+                var drop = 1f - (float)Math.Cos(MathHelper.ToRadians(used * 90));
+                return MaxFriction - ((MaxFriction - MinFriction) * drop);
+            }
+
+            private float GetFrictionFromPeformanceScore(float performance)
+            {
+                performance = MathHelper.Clamp(performance, 0.001f, 0.999f);
+
+                return 46.9f * (float)Math.Pow(-Math.Log(1f - performance), 1f / 2.97f);
             }
         }
     }

@@ -16,6 +16,8 @@ namespace IngameScript
 
             public long? IgcAddress { get; set; }
 
+            public Func<long> TimeStampProvider { get; set; }
+
             public IList<Lap> LapTimes { get; private set; }
 
             public int Laps
@@ -83,6 +85,7 @@ namespace IngameScript
 
             public TrackedRacer()
             {
+                TimeStampProvider = () => 0;
                 LapTimes = new List<Lap>();
             }
 
@@ -95,7 +98,7 @@ namespace IngameScript
                         return;
                     }
 
-                    CurrentLap.Finish();
+                    CurrentLap.Finish(startTimeStamp);
 
                     if (!CurrentLap.IsOutLap && (BestLap == null || CurrentLap?.LapTime < BestLap?.LapTime))
                     {
@@ -103,7 +106,7 @@ namespace IngameScript
                     }
                 }
 
-                var newLap = new Lap(startTimeStamp, isOutLap);
+                var newLap = new Lap(startTimeStamp, TimeStampProvider, isOutLap);
                 LapTimes.Add(newLap);
             }
         }

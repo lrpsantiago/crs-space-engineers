@@ -62,6 +62,7 @@ namespace IngameScript
 
         private RaceMode _raceMode;
         private bool _startLightsProtocol;
+        private long _raceClockFrame;
         private long _raceStartTimeStamp;
         private int _originalStartTime;
         private int _startTimeCounter;
@@ -115,6 +116,8 @@ namespace IngameScript
         public void Main(string argument, UpdateType updateSource)
         {
             Echo($"Running Race Control {CRS_VERSION_COMPATIBILITY}+");
+
+            AdvanceRaceClock(updateSource);
 
             HandleArgument(argument);
 
@@ -235,7 +238,7 @@ namespace IngameScript
                     l.Color = Color.Lime;
                 }
 
-                _raceStartTimeStamp = DateTime.Now.Ticks;
+                _raceStartTimeStamp = GetRaceClockTimeStamp();
 
                 MyEcho($"Race started after {_originalStartTime} milliseconds!\n");
             }
@@ -245,7 +248,7 @@ namespace IngameScript
         {
             _detectedEntities.Clear();
             _startFinishSensor.DetectedEntities(_detectedEntities);
-            var nowTimeStamp = DateTime.Now.Ticks;
+            var nowTimeStamp = GetRaceClockTimeStamp();
 
             foreach (var entity in _detectedEntities)
             {
@@ -290,6 +293,7 @@ namespace IngameScript
                     {
                         Name = entity.Name,
                         IgcAddress = addressExists ? addressTracking : (long?)null,
+                        TimeStampProvider = GetRaceClockTimeStamp,
                     };
 
                     var initialStamp = _raceMode == RaceMode.Race
@@ -338,7 +342,7 @@ namespace IngameScript
                     if (_racers.ContainsKey(entity.Name))
                     {
                         var racer = _racers[entity.Name];
-                        racer.CurrentLap.SetCheckpoint(i);
+                        racer.CurrentLap.SetCheckpoint(i, GetRaceClockTimeStamp());
                     }
                 }
             }
@@ -389,7 +393,7 @@ namespace IngameScript
 
             _detectedEntities.Clear();
             _pitExitSensor.DetectedEntities(_detectedEntities);
-            var nowTimeStamp = DateTime.Now.Ticks;
+            var nowTimeStamp = GetRaceClockTimeStamp();
 
             foreach (var entity in _detectedEntities)
             {
@@ -795,6 +799,7 @@ namespace IngameScript
         {
             _racers.Clear();
             _startLightsProtocol = false;
+            _raceClockFrame = 0;
             _raceStartTimeStamp = 0;
             _originalStartTime = 0;
             _startTimeCounter = 0;
@@ -845,6 +850,19 @@ namespace IngameScript
             }
 
             Me.GetSurface(0).WriteText("", false);
+        }
+
+        private void AdvanceRaceClock(UpdateType updateSource)
+        {
+            if ((updateSource & UpdateType.Update1) == UpdateType.Update1)
+            {
+                _raceClockFrame++;
+            }
+        }
+
+        private long GetRaceClockTimeStamp()
+        {
+            return (_raceClockFrame * TimeSpan.TicksPerSecond) / 60;
         }
 
         private void MyEcho(string text)

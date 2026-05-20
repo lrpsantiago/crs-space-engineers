@@ -10,6 +10,18 @@ using VRageMath;
 
 namespace IngameScript
 {
+    //┌S┐<<<   0m/s  >>>┌E┐
+    //│▒│DRS ERS SLS PIT│█│
+    //│█│P:00/00 L:00/00│█│
+    //│█│TIME: --:--.---│█│
+    //│█│BEST: --:--.---│█│
+    //│█│LAST: --:--.---│█│
+    //│█│ S1-  S2-  S3- │█│
+    //│█│CLR ■■■█■■■ RAI│█│
+    //│█│WATER: ██▒▒ 50%│█│
+    //99% NO CONNECTION 100
+
+
     partial class Program : MyGridProgram
     {
         #region mdk preserve
@@ -86,11 +98,13 @@ namespace IngameScript
         private List<MyDetectedEntityInfo> _mirrorAuxList;
         private List<MyDetectedEntityInfo> _draftingAuxList;
         private CharacterAnimation _spinnerAnim;
+        private CharacterAnimation _blinkingAnim;
 
         public Program()
         {
             _data = new RaceData();
             _spinnerAnim = new CharacterAnimation(new char[] { '-', '\\', '|', '/' }, 150);
+            _blinkingAnim = new CharacterAnimation(new char[] { BLOCK_FILLED_CHAR, BLOCK_EMPTY_CHAR }, 150);
 
             try
             {
@@ -303,6 +317,9 @@ namespace IngameScript
         {
             _stringBuilder.Clear();
 
+            _spinnerAnim.Update(_delta);
+            _blinkingAnim.Update(_delta);
+
             const int DISPLAY_WIDTH = 21;
             const int INNER_DISPLAY_WIDTH = DISPLAY_WIDTH - 6;
             var speed = _mainController.GetShipSpeed();
@@ -324,8 +341,6 @@ namespace IngameScript
             var innerLine = leftProximity.PadRight((int)Math.Ceiling((float)INNER_DISPLAY_WIDTH / 2) - (int)Math.Ceiling((float)strSpeed.Length / 2))
                 + strSpeed +
                 rightProximity.PadLeft((int)Math.Floor((float)INNER_DISPLAY_WIDTH / 2) - (int)Math.Floor((float)strSpeed.Length / 2));
-
-            _spinnerAnim.Update(_delta);
 
             var strS1 = $"S1{GetSectorStatusChar(_data.StatusS1)}";
             var strS2 = $"S2{GetSectorStatusChar(_data.StatusS2)}";
@@ -387,6 +402,9 @@ namespace IngameScript
                 var textSprite = MySprite.CreateText(text, "Monospace", fontColor, textScale);
                 textSprite.Position = new Vector2(128 * scale, 18 * scale);
                 frame.Add(textSprite);
+
+                //SNY ----🌧️0-- RNY
+                //WET 0------ 100
 
                 var dots = MathHelper.Clamp(Math.Round(speed / (100f / 15)), 0, 100);
 
@@ -1322,7 +1340,7 @@ namespace IngameScript
                 {
                     if (_ersCharge < factor * (i + 1))
                     {
-                        ersBar += BLOCK_HALF_CHAR;
+                        ersBar += _blinkingAnim.CurrentChar;
                         continue;
                     }
 
@@ -1354,7 +1372,7 @@ namespace IngameScript
                 {
                     if (perc < factor * (mult + 1))
                     {
-                        strBar[position] = $"│{BLOCK_HALF_CHAR}│";
+                        strBar[position] = $"│{_blinkingAnim.CurrentChar}│";
 
                         continue;
                     }
