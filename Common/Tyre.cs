@@ -11,10 +11,14 @@ namespace IngameScript
         private class Tyre
         {
             private readonly float _wearFactor;
+            private readonly float _maxPerformance;
+            private readonly float _minPerformance;
 
             public char Symbol { get; private set; }
 
-            public float CurrentFriction { get { return CalculateCurrentFriction(); } }
+            public float CurrentFriction { get { return GetFrictionFromPerformanceScore(CurrentPerformance); } }
+
+            private float CurrentPerformance { get { return CalculateCurrentPerformance(); } }
 
             public float MaxFriction { get; private set; }
 
@@ -39,6 +43,8 @@ namespace IngameScript
                 WearPercentage = 1f;
 
                 _wearFactor = 1f / (60 * Lifespan);
+                _maxPerformance = GetPerformanceScoreFromFriction(MaxFriction);
+                _minPerformance = GetPerformanceScoreFromFriction(MinFriction);
             }
 
             public void Update(IMyShipController mainController, IMyMotorSuspension[] suspensions,
@@ -57,9 +63,12 @@ namespace IngameScript
                 WearPercentage -= wearRate * GetTyreWeariness(data.CurrentWeather);
                 WearPercentage = MathHelper.Clamp(WearPercentage, 0, 1f);
 
+                var adjustedPerformance = CurrentPerformance * GetTyreEfficiency(data.CurrentWeather);
+                var adjustedFriction = GetFrictionFromPerformanceScore(adjustedPerformance);
+
                 foreach (var s in suspensions)
                 {
-                    s.Friction = CurrentFriction * GetTyreEfficiency(data.CurrentWeather);
+                    s.Friction = adjustedFriction;
                 }
 
                 if (WearPercentage <= 0.25f)
@@ -99,7 +108,7 @@ namespace IngameScript
                     }
                 }
 
-                if (CurrentFriction <= MinFriction)
+                if (CurrentPerformance <= _minPerformance)
                 {
                     if (suspensions.All(s => s.IsAttached))
                     {
@@ -206,16 +215,26 @@ namespace IngameScript
                 }
             }
 
-            private float CalculateCurrentFriction()
+            private float CalculateCurrentPerformance()
             {
                 var used = 1f - WearPercentage;
                 var drop = 1f - (float)Math.Cos(MathHelper.ToRadians(used * 90));
-                return MaxFriction - ((MaxFriction - MinFriction) * drop);
+
+                return _maxPerformance - ((_maxPerformance - _minPerformance) * drop);
             }
 
-            private float GetFrictionFromPeformanceScore(float performance)
+            private float GetPerformanceScoreFromFriction(float friction)
             {
-                performance = MathHelper.Clamp(performance, 0.001f, 0.999f);
+                friction = MathHelper.Clamp(friction, 0f, 100f);
+
+                var performance = 1f - (float)Math.Exp(-Math.Pow(friction / 46.9f, 2.97f));
+
+                return MathHelper.Clamp(performance, 0f, 1f);
+            }
+
+            private float GetFrictionFromPerformanceScore(float performance)
+            {
+                performance = MathHelper.Clamp(performance, 0.001f, 0.999999f);
 
                 return 46.9f * (float)Math.Pow(-Math.Log(1f - performance), 1f / 2.97f);
             }
