@@ -171,7 +171,7 @@ namespace IngameScript
 
             public static Tyre NewWets()
             {
-                return new Tyre(15, 52, 38, 'W', new Color(0, 16, 255), false);
+                return new Tyre(15, 55, 38, 'W', new Color(0, 16, 255), false);
             }
 
             private float GetTyreEfficiency(WeatherLevel weatherLevel)

@@ -38,7 +38,7 @@ namespace IngameScript
 
         #endregion
 
-        private string CRS_VERSION_COMPATIBILITY = "13.0.0";
+        private string CRS_VERSION_COMPATIBILITY = "14.0.0";
         private IMyTextPanel _lcdMain;
         private IMyTextPanel _lcdLaps;
         private IMyTextPanel _lcdSpeedtrap;
@@ -62,7 +62,7 @@ namespace IngameScript
 
         private RaceMode _raceMode;
         private bool _startLightsProtocol;
-        private long _raceClockFrame;
+        private long _raceClockTicks;
         private long _raceStartTimeStamp;
         private int _originalStartTime;
         private int _startTimeCounter;
@@ -799,7 +799,7 @@ namespace IngameScript
         {
             _racers.Clear();
             _startLightsProtocol = false;
-            _raceClockFrame = 0;
+            _raceClockTicks = 0;
             _raceStartTimeStamp = 0;
             _originalStartTime = 0;
             _startTimeCounter = 0;
@@ -856,13 +856,13 @@ namespace IngameScript
         {
             if ((updateSource & UpdateType.Update1) == UpdateType.Update1)
             {
-                _raceClockFrame++;
+                _raceClockTicks += Runtime.TimeSinceLastRun.Ticks;
             }
         }
 
         private long GetRaceClockTimeStamp()
         {
-            return (_raceClockFrame * TimeSpan.TicksPerSecond) / 60;
+            return _raceClockTicks;
         }
 
         private void MyEcho(string text)
