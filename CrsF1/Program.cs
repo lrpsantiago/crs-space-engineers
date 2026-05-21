@@ -52,7 +52,7 @@ namespace IngameScript
         private readonly string CODE_VERSION = "13.1.0";
         private const int CONNECTION_TIMEOUT = 3000;
         private const int SAVE_STATE_COOLDOWN = 1000;
-        private const int DRAFTING_COOLDOWN = 1000;
+        private const int DRAFTING_COOLDOWN = 750;
         private const float DEFAULT_SUSPENSION_POWER = 80f;
         private const float DEFAULT_SUSPENSION_SPEED_LIMIT = 95f;
         private readonly char ARROW_DOWN_CHAR = '\u25BC';
@@ -169,12 +169,7 @@ namespace IngameScript
 
         public void Save()
         {
-            // Called when the program needs to save its state. Use
-            // this method to save your state to the Storage field
-            // or some other means. 
-            // 
-            // This method is optional and can be removed if not
-            // needed.
+            SaveState(true);
         }
 
         public void Main(string argument, UpdateType updateSource)
@@ -1023,13 +1018,13 @@ namespace IngameScript
 
         private void LoadState()
         {
-            if (string.IsNullOrWhiteSpace(Me.CustomData))
+            if (string.IsNullOrWhiteSpace(Storage))
             {
                 SetTyres(TyreCompound.Soft);
                 return;
             }
 
-            var values = Me.CustomData.Split(';');
+            var values = Storage.Split(';');
 
             if (values.Length < 3)
             {
@@ -1287,7 +1282,7 @@ namespace IngameScript
 
             var tyreChar = _currentTyres.Symbol;
 
-            Me.CustomData = $"{tyreChar};{_currentTyres.WearPercentage};{_ersCharge}";
+            Storage = $"{tyreChar};{_currentTyres.WearPercentage};{_ersCharge}";
             _saveStateCooldown = SAVE_STATE_COOLDOWN;
         }
 
