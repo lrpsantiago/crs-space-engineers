@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using VRage.Game.ModAPI.Ingame.Utilities;
 using VRage.Game.GUI.TextPanel;
 using VRage.Utils;
 using VRageMath;
@@ -24,32 +25,30 @@ namespace IngameScript
 
     partial class Program : MyGridProgram
     {
-        #region mdk preserve
+        #region CustomData
 
-        private readonly string TEAM_TAG = "XXX";                               //Your Team Tag (3 chracters), if you are not in a team yet, keep this as it is.
-        private readonly string DRIVER_NAME = "Guest";                          //Your name
-        private readonly int DRIVER_NUMBER = 99;                                //Your number (0-99)
-        private const float DEFAULT_SUSPENSION_STRENGTH_F = 20f;                //Setup your default front suspensions strength
-        private const float DEFAULT_SUSPENSION_STRENGTH_R = 20f;                //Setup your default rear suspensions strength
-        private const string DISPLAY_NAME = "Driver LCD";
-        private const string BRAKELIGHT_GROUP_NAME = "Brakelight";
-        private const string DRS_LIGHTS_GROUP_NAME = "DRS Lights";
-        private const string ERS_LIGHTS_GROUP_NAME = "ERS Lights";
-        private const string DRAFTING_SENSOR_NAME = "Drafting Sensor";
-        private const string MIRROR_SENSOR_RIGHT_NAME = "Mirror Sensor Right";
-        private const string MIRROR_SENSOR_LEFT_NAME = "Mirror Sensor Left";
-        private readonly int? COCKPIT_DISPLAY_INDEX = null;                     //If you wanna use a cockpit display to show dashboard info (0, 1, 2, 3 or null)
-        private readonly Color DEFAULT_FONT_COLOR = new Color(255, 255, 255);   //Font Color (R, G, B)
-        private const string TEXT_DISPLAY_NAME = "Text LCD";                    //Optional Text-Based LCD, for HudLcd Plugin
-        private const string RANK_DISPLAY_NAME = "Rank LCD";                    //Optional Text-Based LCD, for HudLcd Plugin
-        private const string TEXT_DISPLAY_HUDLCD = "hudlcd:-0.7:-0.35:0.9:White:1";
-        private const string RANK_DISPLAY_HUDLCD = "hudlcd:0.45:0.9:1:White:1";
+        private string _teamTag = "XXX";                               //Your Team Tag (3 chracters), if you are not in a team yet, keep this as it is.
+        private string _driverName = "Guest";                          //Your name
+        private int _driverNumber = 99;                                 //Your number (0-99)
+        private float _defaultSuspensionStrengthF = 20f;                //Setup your default front suspensions strength
+        private float _defaultSuspensionStrengthR = 20f;                //Setup your default rear suspensions strength
+        private string _displayName = "Driver LCD";
+        private string _brakelightGroupName = "Brakelight";
+        private string _drsLightsGroupName = "DRS Lights";
+        private string _ersLightsGroupName = "ERS Lights";
+        private string _draftingSensorName = "Drafting Sensor";
+        private string _mirrorSensorRightName = "Mirror Sensor Right";
+        private string _mirrorSensorLeftName = "Mirror Sensor Left";
+        private int? _cockpitDisplayIndex = null;                       //If you wanna use a cockpit display to show dashboard info (0, 1, 2, 3 or null)
+        private Color _defaultFontColor = new Color(255, 255, 255);     //Font Color (R, G, B)
+        private string _textDisplayName = "Text LCD";                   //Optional Text-Based LCD, for HudLcd Plugin
+        private string _rankDisplayName = "Rank LCD";                   //Optional Text-Based LCD, for HudLcd Plugin
+        private string _textDisplayHudLcd = "hudlcd:-0.7:-0.35:0.9:White:1";
+        private string _rankDisplayHudLcd = "hudlcd:0.45:0.9:1:White:1";
 
         #endregion
 
-        //************ DO NOT MODIFY BELLOW HERE ************
-
-        private readonly string CODE_VERSION = "13.1.0";
+        private readonly string CODE_VERSION = "14.0.0";
         private const int CONNECTION_TIMEOUT = 3000;
         private const int SAVE_STATE_COOLDOWN = 1000;
         private const int DRAFTING_COOLDOWN = 750;
@@ -89,7 +88,6 @@ namespace IngameScript
         private IMyBroadcastListener _broadcastListener;
         private int _connectionTimeout;
         private int _saveStateCooldown;
-        private DateTime _lastTimeStamp;
         private float _delta;
         private float _ersCharge = 1f;
         private bool _isDrafting = false;
@@ -108,6 +106,7 @@ namespace IngameScript
 
             try
             {
+                LoadConfig();
                 SetupGridName();
                 SetupController();
                 SetupSuspensions();
@@ -130,13 +129,12 @@ namespace IngameScript
             }
 
             Runtime.UpdateFrequency = UpdateFrequency.Update1;
-            _lastTimeStamp = DateTime.Now;
         }
 
         private void SetupMirrors()
         {
             _mirrorAuxList = new List<MyDetectedEntityInfo>();
-            _mirrorRight = (IMySensorBlock)GridTerminalSystem.GetBlockWithName(MIRROR_SENSOR_RIGHT_NAME);
+            _mirrorRight = (IMySensorBlock)GridTerminalSystem.GetBlockWithName(_mirrorSensorRightName);
 
             if (_mirrorRight != null)
             {
@@ -151,7 +149,7 @@ namespace IngameScript
                 _mirrorRight.BottomExtend = 5;
             }
 
-            _mirrorLeft = (IMySensorBlock)GridTerminalSystem.GetBlockWithName(MIRROR_SENSOR_LEFT_NAME);
+            _mirrorLeft = (IMySensorBlock)GridTerminalSystem.GetBlockWithName(_mirrorSensorLeftName);
 
             if (_mirrorLeft != null)
             {
@@ -179,8 +177,7 @@ namespace IngameScript
                 return;
             }
 
-            var currentTimeStamp = DateTime.Now;
-            _delta = (float)(currentTimeStamp - _lastTimeStamp).TotalMilliseconds / 1000;
+            _delta = (float)Runtime.TimeSinceLastRun.TotalSeconds;
 
             Echo($"Running CRS-F1 {CODE_VERSION}");
 
@@ -196,7 +193,6 @@ namespace IngameScript
             UpdateAntenna();
             UpdateGyros();
 
-            _lastTimeStamp = currentTimeStamp;
         }
 
         private void UpdateGyros()
@@ -368,7 +364,7 @@ namespace IngameScript
             {
                 var frame = d.DrawFrame();
                 var bgColor = Color.Black;
-                var fontColor = DEFAULT_FONT_COLOR;
+                var fontColor = _defaultFontColor;
 
                 switch (_data.CurrentFlag)
                 {
@@ -626,10 +622,10 @@ namespace IngameScript
             var rl = GetSuspension(SuspensionPosition.RearLeft);
             var rate = (!_isDrsActive ? -150f : 150f) * _delta;
 
-            fr.Strength = MathHelper.Clamp(fr.Strength + rate, DEFAULT_SUSPENSION_STRENGTH_F, 100);
-            fl.Strength = MathHelper.Clamp(fl.Strength + rate, DEFAULT_SUSPENSION_STRENGTH_F, 100);
-            rr.Strength = MathHelper.Clamp(rr.Strength + rate, DEFAULT_SUSPENSION_STRENGTH_R, 100);
-            rl.Strength = MathHelper.Clamp(rl.Strength + rate, DEFAULT_SUSPENSION_STRENGTH_R, 100);
+            fr.Strength = MathHelper.Clamp(fr.Strength + rate, _defaultSuspensionStrengthF, 100);
+            fl.Strength = MathHelper.Clamp(fl.Strength + rate, _defaultSuspensionStrengthF, 100);
+            rr.Strength = MathHelper.Clamp(rr.Strength + rate, _defaultSuspensionStrengthR, 100);
+            rl.Strength = MathHelper.Clamp(rl.Strength + rate, _defaultSuspensionStrengthR, 100);
 
             foreach (var l in _drsLights)
             {
@@ -750,14 +746,14 @@ namespace IngameScript
 
         private void SetupGridName()
         {
-            if (DRIVER_NUMBER <= 0 && DRIVER_NUMBER > 99)
+            if (_driverNumber <= 0 || _driverNumber > 99)
             {
                 throw new Exception("DRIVER_NUMBER should be between 1 and 99");
             }
 
-            var teamTag = TEAM_TAG;
+            var teamTag = _teamTag;
 
-            if (TEAM_TAG == string.Empty)
+            if (_teamTag == string.Empty)
             {
                 teamTag = "XXX";
             }
@@ -766,7 +762,87 @@ namespace IngameScript
                 .Substring(0, 3)
                 .ToUpper();
 
-            Me.CubeGrid.CustomName = $"{teamTag} #{DRIVER_NUMBER:00}-{DRIVER_NAME.Trim()}";
+            Me.CubeGrid.CustomName = $"{teamTag} #{_driverNumber:00}-{_driverName.Trim()}";
+        }
+
+        private void LoadConfig()
+        {
+            var ini = new MyIni();
+
+            if (string.IsNullOrWhiteSpace(Me.CustomData))
+            {
+                SetDefaultConfig(ini);
+                Me.CustomData = ini.ToString();
+            }
+            else
+            {
+                MyIniParseResult result;
+
+                if (!ini.TryParse(Me.CustomData, out result))
+                {
+                    throw new Exception("CustomData parse error: " + result.ToString());
+                }
+            }
+
+            _teamTag = ini.Get("Driver", "TeamTag").ToString(_teamTag);
+            _driverName = ini.Get("Driver", "Name").ToString(_driverName);
+            _driverNumber = ini.Get("Driver", "Number").ToInt32(_driverNumber);
+
+            _defaultSuspensionStrengthF = (float)ini.Get("Suspension", "DefaultStrengthFront").ToDouble(_defaultSuspensionStrengthF);
+            _defaultSuspensionStrengthR = (float)ini.Get("Suspension", "DefaultStrengthRear").ToDouble(_defaultSuspensionStrengthR);
+
+            _displayName = ini.Get("Blocks", "DisplayName").ToString(_displayName);
+            _brakelightGroupName = ini.Get("Blocks", "BrakelightGroupName").ToString(_brakelightGroupName);
+            _drsLightsGroupName = ini.Get("Blocks", "DrsLightsGroupName").ToString(_drsLightsGroupName);
+            _ersLightsGroupName = ini.Get("Blocks", "ErsLightsGroupName").ToString(_ersLightsGroupName);
+            _draftingSensorName = ini.Get("Blocks", "DraftingSensorName").ToString(_draftingSensorName);
+            _mirrorSensorRightName = ini.Get("Blocks", "MirrorSensorRightName").ToString(_mirrorSensorRightName);
+            _mirrorSensorLeftName = ini.Get("Blocks", "MirrorSensorLeftName").ToString(_mirrorSensorLeftName);
+
+            var cockpitDisplayIndex = ini.Get("Displays", "CockpitDisplayIndex").ToInt32(-1);
+            _cockpitDisplayIndex = cockpitDisplayIndex >= 0 ? (int?)cockpitDisplayIndex : null;
+            _textDisplayName = ini.Get("Displays", "TextDisplayName").ToString(_textDisplayName);
+            _rankDisplayName = ini.Get("Displays", "RankDisplayName").ToString(_rankDisplayName);
+            _textDisplayHudLcd = ini.Get("Displays", "TextDisplayHudLcd").ToString(_textDisplayHudLcd);
+            _rankDisplayHudLcd = ini.Get("Displays", "RankDisplayHudLcd").ToString(_rankDisplayHudLcd);
+
+            var fontR = ClampColorComponent(ini.Get("Appearance", "FontColorR").ToInt32(_defaultFontColor.R));
+            var fontG = ClampColorComponent(ini.Get("Appearance", "FontColorG").ToInt32(_defaultFontColor.G));
+            var fontB = ClampColorComponent(ini.Get("Appearance", "FontColorB").ToInt32(_defaultFontColor.B));
+            _defaultFontColor = new Color(fontR, fontG, fontB);
+        }
+
+        private void SetDefaultConfig(MyIni ini)
+        {
+            ini.Set("Driver", "TeamTag", _teamTag);
+            ini.Set("Driver", "Name", _driverName);
+            ini.Set("Driver", "Number", _driverNumber);
+
+            ini.Set("Suspension", "DefaultStrengthFront", _defaultSuspensionStrengthF);
+            ini.Set("Suspension", "DefaultStrengthRear", _defaultSuspensionStrengthR);
+
+            ini.Set("Blocks", "DisplayName", _displayName);
+            ini.Set("Blocks", "BrakelightGroupName", _brakelightGroupName);
+            ini.Set("Blocks", "DrsLightsGroupName", _drsLightsGroupName);
+            ini.Set("Blocks", "ErsLightsGroupName", _ersLightsGroupName);
+            ini.Set("Blocks", "DraftingSensorName", _draftingSensorName);
+            ini.Set("Blocks", "MirrorSensorRightName", _mirrorSensorRightName);
+            ini.Set("Blocks", "MirrorSensorLeftName", _mirrorSensorLeftName);
+
+            ini.Set("Displays", "CockpitDisplayIndex", _cockpitDisplayIndex.HasValue ? _cockpitDisplayIndex.Value : -1);
+            ini.Set("Displays", "TextDisplayName", _textDisplayName);
+            ini.Set("Displays", "RankDisplayName", _rankDisplayName);
+            ini.Set("Displays", "TextDisplayHudLcd", _textDisplayHudLcd);
+            ini.Set("Displays", "RankDisplayHudLcd", _rankDisplayHudLcd);
+
+            ini.Set("Appearance", "FontColorR", _defaultFontColor.R);
+            ini.Set("Appearance", "FontColorG", _defaultFontColor.G);
+            ini.Set("Appearance", "FontColorB", _defaultFontColor.B);
+        }
+
+        private int ClampColorComponent(int value)
+        {
+            return Math.Max(0, Math.Min(255, value));
         }
 
         private void SetupController()
@@ -837,7 +913,7 @@ namespace IngameScript
             _stringBuilder = new StringBuilder();
             _displays = new List<IMyTextSurface> { Me.GetSurface(0) };
 
-            var display = (IMyTextSurface)GridTerminalSystem.GetBlockWithName(DISPLAY_NAME);
+            var display = (IMyTextSurface)GridTerminalSystem.GetBlockWithName(_displayName);
 
             if (display != null)
             {
@@ -851,13 +927,13 @@ namespace IngameScript
                 d.Script = string.Empty;
             }
 
-            if (COCKPIT_DISPLAY_INDEX.HasValue)
+            if (_cockpitDisplayIndex.HasValue)
             {
                 var cockpit = _mainController as IMyCockpit;
 
                 if (cockpit != null)
                 {
-                    var d = cockpit.GetSurface(COCKPIT_DISPLAY_INDEX.GetValueOrDefault());
+                    var d = cockpit.GetSurface(_cockpitDisplayIndex.GetValueOrDefault());
 
                     if (d != null)
                     {
@@ -871,7 +947,7 @@ namespace IngameScript
                 }
             }
 
-            var textDisplay = (IMyTextSurface)GridTerminalSystem.GetBlockWithName(TEXT_DISPLAY_NAME);
+            var textDisplay = (IMyTextSurface)GridTerminalSystem.GetBlockWithName(_textDisplayName);
 
             if (textDisplay != null)
             {
@@ -879,12 +955,12 @@ namespace IngameScript
                 textDisplay.ContentType = ContentType.TEXT_AND_IMAGE;
                 textDisplay.Alignment = TextAlignment.CENTER;
                 textDisplay.Font = "Monospace";
-                ((IMyTerminalBlock)textDisplay).CustomData = TEXT_DISPLAY_HUDLCD;
+                ((IMyTerminalBlock)textDisplay).CustomData = _textDisplayHudLcd;
 
                 _textDisplay = textDisplay;
             }
 
-            var rankDisplay = (IMyTextSurface)GridTerminalSystem.GetBlockWithName(RANK_DISPLAY_NAME);
+            var rankDisplay = (IMyTextSurface)GridTerminalSystem.GetBlockWithName(_rankDisplayName);
 
             if (rankDisplay != null)
             {
@@ -892,7 +968,7 @@ namespace IngameScript
                 rankDisplay.ContentType = ContentType.TEXT_AND_IMAGE;
                 rankDisplay.Alignment = TextAlignment.CENTER;
                 rankDisplay.Font = "Monospace";
-                ((IMyTerminalBlock)rankDisplay).CustomData = RANK_DISPLAY_HUDLCD;
+                ((IMyTerminalBlock)rankDisplay).CustomData = _rankDisplayHudLcd;
 
                 _rankDisplay = rankDisplay;
             }
@@ -902,12 +978,12 @@ namespace IngameScript
         {
             var lights = new List<IMyLightingBlock>();
 
-            GridTerminalSystem.GetBlockGroupWithName(BRAKELIGHT_GROUP_NAME)
+            GridTerminalSystem.GetBlockGroupWithName(_brakelightGroupName)
                 .GetBlocksOfType<IMyLightingBlock>(lights, b => b.CubeGrid == Me.CubeGrid);
 
             if (lights.Count <= 0)
             {
-                throw new Exception($"\"{BRAKELIGHT_GROUP_NAME}\" group not set.");
+                throw new Exception($"\"{_brakelightGroupName}\" group not set.");
             }
 
             _brakelights = new List<IMyLightingBlock>();
@@ -935,7 +1011,7 @@ namespace IngameScript
         {
             _drsLights = new List<IMyLightingBlock>();
             var lights = new List<IMyTerminalBlock>();
-            var group = GridTerminalSystem.GetBlockGroupWithName(DRS_LIGHTS_GROUP_NAME);
+            var group = GridTerminalSystem.GetBlockGroupWithName(_drsLightsGroupName);
 
             if (group == null)
             {
@@ -955,7 +1031,7 @@ namespace IngameScript
         {
             _ersLights = new List<IMyLightingBlock>();
             var lights = new List<IMyTerminalBlock>();
-            var group = GridTerminalSystem.GetBlockGroupWithName(ERS_LIGHTS_GROUP_NAME);
+            var group = GridTerminalSystem.GetBlockGroupWithName(_ersLightsGroupName);
 
             if (group == null)
             {
@@ -978,7 +1054,7 @@ namespace IngameScript
 
         private void SetupDraftingSensor()
         {
-            var sensor = (IMySensorBlock)GridTerminalSystem.GetBlockWithName(DRAFTING_SENSOR_NAME);
+            var sensor = (IMySensorBlock)GridTerminalSystem.GetBlockWithName(_draftingSensorName);
 
             if (sensor == null)
             {
@@ -1054,7 +1130,7 @@ namespace IngameScript
             antenna.Enabled = true;
             antenna.Radius = 5000;
             antenna.EnableBroadcasting = true;
-            antenna.HudText = $"(P{_data.Position}) {DRIVER_NAME}-{DRIVER_NUMBER}";
+            antenna.HudText = $"(P{_data.Position}) {_driverName}-{_driverNumber}";
             _antenna = antenna;
         }
 
