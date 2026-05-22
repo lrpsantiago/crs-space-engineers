@@ -34,6 +34,7 @@ namespace IngameScript
         private const int DISPLAY_WIDTH = 38;
         private const int BROADCAST_COOLDOWN = 1000;
         private const bool ENABLE_WEATHER = true;
+        private const bool ENABLE_WEATHER_EFFECTS = true;
         private const WeatherLevel INITIAL_WEATHER = WeatherLevel.Clear;
 
         #endregion
@@ -806,9 +807,10 @@ namespace IngameScript
             _racePositions.Clear();
             _currentFlag = Flag.Green;
             _bestLap = null;
-            _weather = new Weather(INITIAL_WEATHER)
+            _weather = new Weather(INITIAL_WEATHER, Me)
             {
-                Enabled = ENABLE_WEATHER
+                Enabled = ENABLE_WEATHER,
+                EffectsEnabled = ENABLE_WEATHER_EFFECTS
             };
 
             for (int i = 0; i < _startLightGroups.Count; i++)

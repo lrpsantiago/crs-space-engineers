@@ -1,4 +1,5 @@
 ﻿using System;
+using Sandbox.ModAPI.Ingame;
 using VRageMath;
 
 namespace IngameScript
@@ -19,18 +20,25 @@ namespace IngameScript
             private readonly WeatherLevel _initialLevel;
             private readonly int[][] _changeChances;
             private readonly Random _random;
+            private readonly WeatherEffect _effect;
             private float _time;
 
             public WeatherLevel Level { get; private set; }
 
             public bool Enabled { get; set; }
 
+            public bool EffectsEnabled
+            {
+                get { return _effect.Enabled; }
+                set { _effect.Enabled = value; }
+            }
+
             public string Description
             {
                 get { return GetWeatherDescription(Level); }
             }
 
-            public Weather(WeatherLevel initialLevel = WeatherLevel.Clear)
+            public Weather(WeatherLevel initialLevel, IMyProgrammableBlock programmableBlock)
             {
                 _time = WEATHER_UPDATE_TIME;
                 _changeChances = new int[][]
@@ -46,6 +54,7 @@ namespace IngameScript
 
                 _random = new Random();
                 _initialLevel = initialLevel;
+                _effect = new WeatherEffect(programmableBlock);
                 Level = _initialLevel;
             }
 
@@ -54,6 +63,7 @@ namespace IngameScript
                 if (!Enabled)
                 {
                     Level = WeatherLevel.Clear;
+                    _effect.Apply(Level);
                     return;
                 }
 
@@ -64,6 +74,8 @@ namespace IngameScript
                     ChangeLevel();
                     _time += WEATHER_UPDATE_TIME;
                 }
+
+                _effect.Apply(Level);
             }
 
             private void ChangeLevel()
